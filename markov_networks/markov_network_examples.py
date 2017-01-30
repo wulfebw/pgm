@@ -2,9 +2,11 @@
 import copy 
 import numpy as np
 
-from markov_network import MarkovNetwork, Variable, Factor, Graph
+from factors import TabularFactor, LinearGaussianFactor
+from markov_network import MarkovNetwork, Variable, Graph
 
-def run_binary_test():
+
+def binary_example():
     """
     three variable markov network with factors associated with the binary 
     cliques, of which there are three
@@ -25,21 +27,21 @@ def run_binary_test():
     cliques = [(A,B), (A,C), (B,C)]
     factors = {}
     for clique in cliques:
-        factors[clique] = Factor(clique, np.array([[10, 1],[1, 10]]))
+        factors[clique] = TabularFactor(clique, np.array([[10, 1],[1, 10]]))
 
     # create the markov network
     mn_pairwise = MarkovNetwork(graph, factors)
 
     # test
     scaled_factors = copy.deepcopy(factors)
-    scaled_factors[(A,B)] = Factor((A,B), 10 * np.array([[10, 1],[1, 10]]))
+    scaled_factors[(A,B)] = TabularFactor((A,B), 10 * np.array([[10, 1],[1, 10]]))
 
     # create the markov network
     mn_pairwise_scaled = MarkovNetwork(graph, factors)
 
     # create the factor over all the variables
     factors = {(A,B,C):
-        Factor((A,B,C), np.array([
+        TabularFactor((A,B,C), np.array([
             [
                 [1000,10],
                 [10,10]
@@ -92,7 +94,7 @@ def haircolor_example():
     # D doesn't like the first color at all and likes the third a lot
     factors[-1][0] = 0
     factors[-1][2] = 10
-    factors = {c:Factor(c,f) for (c,f) in zip(cliques, factors)}
+    factors = {c:TabularFactor(c,f) for (c,f) in zip(cliques, factors)}
     
     # create the markov network
     mn = MarkovNetwork(graph, factors)
@@ -119,6 +121,36 @@ def haircolor_example():
     indp = mn.conditionally_independent(set([A]), set([C]), set([B,D]))
     print(indp)
 
+def linear_gaussian_example():
+    # create the variables (the largest affinity will be when they sum to 0)
+    A = Variable('A', [-1,0,1])
+    B = Variable('B', [-1,0,1])
+
+    # create graph
+    edges = {}
+    edges[A] = [B]
+    edges[B] = [A]
+    graph = Graph(edges)
+
+    # create factors
+    cliques = [(A,B)]
+    factors = {
+        (A,B): LinearGaussianFactor((A,B)) # default is unit gaussian
+    }
+
+    # create the markov network
+    mn = MarkovNetwork(graph, factors)
+
+    # what's the partition function
+    print(mn.partition)
+
+    # what assignment of the variables is most likely?
+    ml_assignment = mn.most_likely_assignment()
+    print(ml_assignment)
+    # what's the probability of that assignment?
+    print(mn.p(ml_assignment))
+
 if __name__ == '__main__':
-    run_binary_test()
+    binary_example()
     haircolor_example()
+    linear_gaussian_example()

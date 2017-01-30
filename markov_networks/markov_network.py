@@ -7,8 +7,9 @@ import sys
 path = os.path.join(os.path.dirname(__file__), os.pardir, 'graphs')
 sys.path.append(os.path.abspath(path))
 
-import search_problem
 import bfs
+import factors 
+import search_problem
 
 class Variable(object):
     """
@@ -66,31 +67,6 @@ class Graph(object):
             if path != []:
                 return path
         return []
-
-class Factor(object):
-    """
-    Description:
-        - Factor represents a potential function over a set of variables.
-    """
-
-    def __init__(self, clique, table):
-        self.clique = clique
-        self.table = np.asarray(table)
-
-    def affinity(self, assignment):
-        """
-        Description:
-            - Return the affinity associated with an assignment, or 1 if the 
-                assignment contains no variables associated with this factor.
-
-        Args:
-            - assignment: dict mapping variables to values
-        """
-        key = tuple(assignment[var] for var in self.clique)
-        if not key:
-            return 1
-        else:
-            return self.table[key]
 
 class MarkovNetwork(object):
 
