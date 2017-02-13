@@ -150,7 +150,47 @@ def linear_gaussian_example():
     # what's the probability of that assignment?
     print(mn.p(ml_assignment))
 
+def quiz_question():
+    # create the variables
+    num_colors = 3
+    A = Variable('A', [0,1])
+    B = Variable('B', [0,1])
+    C = Variable('C', [0,1])
+    D = Variable('D', [0,1])
+
+    # create graph
+    edges = {}
+    edges[A] = [B, C]
+    edges[B] = [A, C]
+    edges[C] = [A, B, D]
+    edges[D] = [C]
+    graph = Graph(edges)
+
+    # create factors
+    cliques = [(A,B,C), (C,D)]
+
+    factors = {(A,B,C):
+        TabularFactor((A,B,C), np.array([
+            [
+                [1,5],
+                [5,1]
+            ], 
+
+            [
+                [10,5],
+                [1,1]
+            ]
+        ]))
+    }
+    factors[(C,D)] = TabularFactor((C,D), np.array([[5,1],[1,5]]))
+    
+    # create the markov network
+    mn = MarkovNetwork(graph, factors)
+
+    print(mn.partition)
+
 if __name__ == '__main__':
-    binary_example()
-    haircolor_example()
-    linear_gaussian_example()
+    # binary_example()
+    # haircolor_example()
+    # linear_gaussian_example()
+    quiz_question()
